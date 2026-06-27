@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Central de Utilitários Web</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <script src="https://unpkg.com/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body class="bg-gray-50 text-gray-800 min-h-screen flex flex-col md:flex-row font-sans">
+
+    <aside class="bg-slate-900 text-white w-full md:w-64 p-5 flex flex-col justify-between shadow-lg">
+        <div>
+            <div class="flex items-center space-x-2 px-2 py-3 mb-6 border-b border-slate-700">
+                <i data-lucide="wrench" class="text-blue-400 w-6 h-6"></i>
+                <span class="text-xl font-bold tracking-wide">Utiles WEB</span>
+            </div>
+            
+            <nav class="space-y-2">
+                <button onclick="switchTab('pdf-tab')" id="btn-pdf-tab" class="w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-left transition bg-blue-600 text-white font-medium cursor-pointer">
+                    <i data-lucide="file-text" class="w-5 h-5"></i>
+                    <span>Unir PDFs</span>
+                </button>
+                <button onclick="switchTab('qr-tab')" id="btn-qr-tab" class="w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-left transition text-slate-400 hover:bg-slate-800 hover:text-white cursor-pointer">
+                    <i data-lucide="qr-code" class="w-5 h-5"></i>
+                    <span>Gerador de QR Code</span>
+                </button>
+                <button onclick="switchTab('image-tab')" id="btn-image-tab" class="w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-left transition text-slate-400 hover:bg-slate-800 hover:text-white cursor-pointer">
+                    <i data-lucide="image" class="w-5 h-5"></i>
+                    <span>Conversor de Imagem</span>
+                </button>
+            </nav>
+        </div>
+        
+        <div class="text-xs text-slate-500 pt-4 border-t border-slate-800 text-center md:text-left">
+            <p><i data-lucide="shield-check" class="w-4 h-4 inline mr-1 text-green-500"></i> 100% Local e Seguro</p>
+        </div>
+    </aside>
+
+    <main class="flex-grow p-6 md:p-10 max-w-5xl mx-auto w-full">
+        
+        <section id="pdf-tab" class="tab-content block">
+            <div class="mb-6">
+                <h2 class="text-2xl font-bold text-slate-800 flex items-center gap-2">
+                    <i data-lucide="file-text" class="text-blue-600"></i> Mesclador de PDF Personalizado
+                </h2>
+                <p class="text-sm text-gray-500 mt-1">Selecione os arquivos, escolha quais páginas deseja manter e junte-as.</p>
+            </div>
+
+            <div class="bg-white p-8 rounded-xl shadow-sm border border-gray-200 text-center mb-6">
+                <label class="block mb-3 font-medium text-gray-700">Selecione um ou mais arquivos PDF:</label>
+                <input type="file" id="pdf-input" accept=".pdf" multiple class="block w-full max-w-md mx-auto text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 cursor-pointer"/>
+            </div>
+
+            <div id="files-container" class="space-y-4"></div>
+
+            <div id="action-zone" class="mt-8 text-center hidden">
+                <button id="merge-btn" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-8 rounded-lg shadow-md transition inline-flex items-center gap-2 cursor-pointer">
+                    <i data-lucide="combine" class="w-5 h-5"></i> Mesclar Páginas Selecionadas e Baixar
+                </button>
+            </div>
+        </section>
+
+        <section id="qr-tab" class="tab-content hidden">
+            <div class="mb-6">
+                <h2 class="text-2xl font-bold text-slate-800 flex items-center gap-2">
+                    <i data-lucide="qr-code" class="text-blue-600"></i> Gerador de QR Code
+                </h2>
+                <p class="text-sm text-gray-500 mt-1">Converta links ou textos em um código QR pronto para download.</p>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200 md:col-span-2 flex flex-col justify-between">
+                    <div>
+                        <label for="qr-text" class="block font-medium text-gray-700 mb-2">Texto ou URL:</label>
+                        <textarea id="qr-text" rows="5" placeholder="Digite o texto, link ou chave PIX aqui..." class="w-full p-3 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition resize-none"></textarea>
+                    </div>
+                    <div class="mt-4">
+                        <button id="generate-qr-btn" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-6 rounded-lg shadow-md transition flex items-center justify-center gap-2 cursor-pointer">
+                            <i data-lucide="refresh-cw" class="w-5 h-5"></i> Gerar QR Code
+                        </button>
+                    </div>
+                </div>
+
+                <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200 flex flex-col items-center justify-center min-h-[300px]">
+                    <div id="qr-placeholder" class="text-center text-gray-400">
+                        <i data-lucide="image" class="w-16 h-16 mx-auto mb-2 opacity-40"></i>
+                        <p class="text-sm">O QR Code aparecerá aqui</p>
+                    </div>
+                    <div id="qr-result-container" class="hidden text-center w-full">
+                        <div id="qr-code-output" class="bg-white p-4 rounded-lg border border-gray-200 inline-block mb-4 shadow-inner"></div>
+                        <button id="download-qr-btn" class="w-full bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-4 rounded-lg transition flex items-center justify-center gap-2 cursor-pointer">
+                            <i data-lucide="download" class="w-4 h-4"></i> Baixar Imagem (PNG)
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="image-tab" class="tab-content hidden">
+            <div class="mb-6">
+                <h2 class="text-2xl font-bold text-slate-800 flex items-center gap-2">
+                    <i data-lucide="image" class="text-blue-600"></i> Conversor de Imagens
+                </h2>
+                <p class="text-sm text-gray-500 mt-1">Converta suas imagens para PNG, JPEG ou WEBP instantaneamente.</p>
+            </div>
+
+            <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200 max-w-2xl mx-auto">
+                <div class="mb-5">
+                    <label class="block mb-2 font-medium text-gray-700">Selecione a Imagem:</label>
+                    <input type="file" id="image-input" accept="image/*" class="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 cursor-pointer"/>
+                </div>
+
+                <div id="image-preview-container" class="hidden mb-5 text-center">
+                    <p class="text-xs text-gray-400 mb-1">Pré-visualização:</p>
+                    <img id="image-preview" class="max-h-48 mx-auto rounded-lg shadow-sm border border-gray-100 mb-4">
+                    
+                    <div class="flex flex-col sm:flex-row items-center justify-center gap-4 bg-gray-50 p-4 rounded-lg border border-gray-100">
+                        <div>
+                            <label for="image-format" class="text-sm font-medium text-gray-600 mr-2">Converter para:</label>
+                            <select id="image-format" class="bg-white border border-gray-300 rounded px-3 py-1.5 text-sm outline-none focus:ring-2 focus:ring-blue-500">
+                                <option value="image/png">PNG</option>
+                                <option value="image/jpeg">JPEG</option>
+                                <option value="image/webp">WEBP</option>
+                            </select>
+                        </div>
+                        <button id="convert-image-btn" class="bg-green-600 hover:bg-green-700 text-white font-semibold py-2 px-6 rounded-lg text-sm transition flex items-center gap-2 cursor-pointer">
+                            <i data-lucide="file-output" class="w-4 h-4"></i> Converter e Baixar
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <script>
+        // Inicialização dos Ícones
+        lucide.createIcons();
+
+        // Gerenciador de Abas SPA
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-content').forEach(tab => tab.classList.add('hidden'));
+            document.getElementById(tabId).classList.remove('hidden');
+
+            const tabs = ['pdf-tab', 'qr-tab', 'image-tab'];
+            tabs.forEach(t => {
+                const btn = document.getElementById(`btn-${t}`);
+                if (t === tabId) {
+                    btn.className = "w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-left transition bg-blue-600 text-white font-medium cursor-pointer";
+                } else {
+                    btn.className = "w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-left transition text-slate-400 hover:bg-slate-800 hover:text-white cursor-pointer";
+                }
+            });
+        }
+
+        // ==========================================
+        // MÓDULO 1: UNIÃO DE PDF
+        // ==========================================
+        const pdfInput = document.getElementById('pdf-input');
+        const filesContainer = document.getElementById('files-container');
+        const actionZone = document.getElementById('action-zone');
+        const mergeBtn = document.getElementById('merge-btn');
+        let uploadedFiles = [];
+
+        pdfInput.addEventListener('change', async (e) => {
+            const files = Array.from(e.target.files);
+            if (files.length === 0) return;
+
+            for (const file of files) {
+                try {
+                    const arrayBuffer = await file.arrayBuffer();
+                    const pdfDoc = await PDFLib.PDFDocument.load(arrayBuffer, { ignoreEncryption: true });
+                    const pageCount = pdfDoc.getPageCount();
+                    const fileId = Date.now() + Math.random().toString(36).substr(2, 5);
+                    
+                    uploadedFiles.push({ id: fileId, name: file.name, buffer: arrayBuffer, pageCount: pageCount });
+                    renderFileCard(fileId, file.name, pageCount);
+                } catch (error) {
+                    alert(`Erro ao carregar o arquivo "${file.name}". Ele pode estar protegido por senha.`);
+                }
+            }
+            toggleActionZone();
+            pdfInput.value = '';
+        });
+
+        function renderFileCard(id, name, pageCount) {
+            const card = document.createElement('div');
+            card.id = id;
+            card.className = "bg-white p-5 rounded-xl shadow-sm border border-gray-200 relative";
+
+            let checkboxesHtml = '';
+            for (let i = 1; i <= pageCount; i++) {
+                checkboxesHtml += `
+                    <label class="flex items-center space-x-2 bg-gray-50 border border-gray-200 rounded-lg p-2 hover:bg-blue-50 cursor-pointer transition select-none">
+                        <input type="checkbox" data-file-id="${id}" data-page-index="${i - 1}" checked class="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500">
+                        <span class="text-xs font-semibold text-gray-600">Pág. ${i}</span>
+                    </label>
+                `;
+            }
+
+            card.innerHTML = `
+                <div class="flex justify-between items-center mb-3 border-b border-gray-100 pb-2">
+                    <h3 class="font-semibold text-base text-gray-700 truncate max-w-md flex items-center gap-2">📄 ${name}</h3>
+                    <button onclick="removeFile('${id}')" class="text-red-500 hover:text-red-700 text-sm font-medium transition cursor-pointer">Excluir</button>
+                </div>
+                <div class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-2">${checkboxesHtml}</div>
+            `;
+            filesContainer.appendChild(card);
+        }
+
+        window.removeFile = function(id) {
+            uploadedFiles = uploadedFiles.filter(file => file.id !== id);
+            document.getElementById(id).remove();
+            toggleActionZone();
+        }
+
+        function toggleActionZone() {
+            if (uploadedFiles.length > 0) actionZone.classList.remove('hidden');
+            else actionZone.classList.add('hidden');
+        }
+
+        mergeBtn.addEventListener('click', async () => {
+            const mergedPdf = await PDFLib.PDFDocument.create();
+            let pagesAdded = 0;
+            const cards = filesContainer.querySelectorAll('[id]');
+            
+            for (const card of cards) {
+                const fileId = card.id;
+                const fileData = uploadedFiles.find(f => f.id === fileId);
+                if (!fileData) continue;
+
+                const checkedBoxes = card.querySelectorAll(`input[data-file-id="${fileId}"]:checked`);
+                if (checkedBoxes.length === 0) continue;
+
+                const srcPdfDoc = await PDFLib.PDFDocument.load(fileData.buffer);
+                const pageIndices = Array.from(checkedBoxes).map(cb => parseInt(cb.getAttribute('data-page-index')));
+                const copiedPages = await mergedPdf.copyPages(srcPdfDoc, pageIndices);
+                copiedPages.forEach(page => mergedPdf.addPage(page));
+                pagesAdded += copiedPages.length;
+            }
+
+            if (pagesAdded === 0) {
+                alert('Selecione pelo menos uma página!');
+                return;
+            }
+
+            const mergedPdfBytes = await mergedPdf.save();
+            const blob = new Blob([mergedPdfBytes], { type: 'application/pdf' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = `pdf_mesclado_${Date.now()}.pdf`;
+            link.click();
+        });
+
+        // ==========================================
+        // MÓDULO 2: GERADOR DE QR CODE
+        // ==========================================
+        const qrText = document.getElementById('qr-text');
+        const generateQrBtn = document.getElementById('generate-qr-btn');
+        const qrPlaceholder = document.getElementById('qr-placeholder');
+        const qrResultContainer = document.getElementById('qr-result-container');
+        const qrCodeOutput = document.getElementById('qr-code-output');
+        const downloadQrBtn = document.getElementById('download-qr-btn');
+        let currentQrBase64 = '';
+
+        generateQrBtn.addEventListener('click', () => {
+            const content = qrText.value.trim();
+            if (!content) {
+                alert('Por favor, digite algum texto ou URL para gerar o QR Code.');
+                return;
+            }
+            try {
+                const qr = qrcode(0, 'M');
+                qr.addData(content);
+                qr.make();
+                
+                const imgTagString = qr.createImgTag(8, 4); 
+                const parser = new DOMParser();
+                const htmlDoc = parser.parseFromString(imgTagString, 'text/html');
+                const imgElement = htmlDoc.querySelector('img');
+                
+                if (imgElement) {
+                    currentQrBase64 = imgElement.src;
+                    imgElement.className = "mx-auto block";
+                    qrCodeOutput.innerHTML = '';
+                    qrCodeOutput.appendChild(imgElement);
+                    qrPlaceholder.classList.add('hidden');
+                    qrResultContainer.classList.remove('hidden');
+                }
+            } catch (error) {
+                alert('Erro ao gerar o QR Code.');
+            }
+        });
+
+        downloadQrBtn.addEventListener('click', () => {
+            if (!currentQrBase64) return;
+            const link = document.createElement('a');
+            link.download = `qrcode_${Date.now()}.png`;
+            link.href = currentQrBase64;
+            link.click();
+        });
+
+        // ==========================================
+        // MÓDULO 3: CONVERSOR DE IMAGENS
+        // ==========================================
+        const imageInput = document.getElementById('image-input');
+        const imagePreviewContainer = document.getElementById('image-preview-container');
+        const imagePreview = document.getElementById('image-preview');
+        const imageFormatSelect = document.getElementById('image-format');
+        const convertImageBtn = document.getElementById('convert-image-btn');
+        let loadedImageElement = null;
+        let originalFileName = "imagem";
+
+        imageInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (!file) return;
+
+            originalFileName = file.name.substring(0, file.name.lastIndexOf('.')) || file.name;
+
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                const img = new Image();
+                img.onload = function() {
+                    loadedImageElement = img;
+                    imagePreview.src = event.target.result;
+                    imagePreviewContainer.classList.remove('hidden');
+                };
+                img.src = event.target.result;
+            };
+            reader.readAsDataURL(file);
+        });
+
+        convertImageBtn.addEventListener('click', () => {
+            if (!loadedImageElement) return;
+
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            canvas.width = loadedImageElement.width;
+            canvas.height = loadedImageElement.height;
+
+            const targetFormat = imageFormatSelect.value;
+            if (targetFormat === 'image/jpeg') {
+                ctx.fillStyle = '#FFFFFF';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+            }
+
+            ctx.drawImage(loadedImageElement, 0, 0);
+            const dataUrl = canvas.toDataURL(targetFormat, 1.0);
+
+            let extension = '.png';
+            if (targetFormat === 'image/jpeg') extension = '.jpg';
+            if (targetFormat === 'image/webp') extension = '.webp';
+
+            const link = document.createElement('a');
+            link.download = `${originalFileName}_convertido${extension}`;
+            link.href = dataUrl;
+            link.click();
+        });
+    </script>
+</body>
+</html>
